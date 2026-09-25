@@ -1,3 +1,18 @@
+// ==================== NEW TYPES (Backend) ====================
+
+export type BackendRole = 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: BackendRole;
+  avatarUrl: string | null;
+  createdAt: string;
+}
+
+// ==================== LEGACY TYPES (to be phased out) ====================
+
 export type UserRole = 'student' | 'faculty';
 
 export interface UserProfile {
@@ -19,7 +34,7 @@ export interface UserProfile {
 
 export interface RubricLevel {
   points: number;
-  label: string; // e.g., "Sobresaliente", "Notable", "Aceptable", "Insuficiente"
+  label: string;
   description: string;
 }
 
@@ -83,7 +98,7 @@ export interface CampusNotice {
   id: string;
   title: string;
   date: string;
-  category: 'Decanato' | 'Biblioteca' | 'Investigación' | 'Bienestar';
+  category: string;
   summary: string;
   important?: boolean;
 }
@@ -97,4 +112,23 @@ export interface ServiceRequest {
   documentName?: string;
 }
 
-export type ActiveScreen = 'login' | 'dashboard' | 'course-detail' | 'grades' | 'services';
+export type ActiveScreen = 'login' | 'dashboard' | 'course-detail' | 'course-editor' | 'grades' | 'services' | 'explore' | 'my-courses' | 'progress' | 'certificates' | 'profile';
+
+// ==================== HELPER ====================
+
+export function mapBackendRoleToLegacy(role: BackendRole): UserRole {
+  return role === 'INSTRUCTOR' ? 'faculty' : 'student';
+}
+
+export function mapAuthToProfile(user: AuthUser): UserProfile {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: mapBackendRoleToLegacy(user.role),
+    avatarUrl: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    faculty: '',
+    program: '',
+    academicPeriod: '',
+  };
+}

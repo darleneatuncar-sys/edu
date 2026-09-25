@@ -1,61 +1,78 @@
 import React, { useState } from 'react';
-import { UserRole } from '../types';
 import { HelpModal } from './HelpModal';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { RegisterModal } from './RegisterModal';
 
 interface LoginScreenProps {
-  onLoginSuccess: (role: UserRole) => void;
+  onLoginSuccess: (user: any) => void;
   lang: 'ES' | 'EN';
   onToggleLang: () => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, onToggleLang }) => {
-  const [role, setRole] = useState<UserRole>('student');
-  const [username, setUsername] = useState('vmendoza@universidad.edu');
-  const [password, setPassword] = useState('Campus2025*');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   // Modals
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
-  const handleRoleChange = (newRole: UserRole) => {
-    setRole(newRole);
-    if (newRole === 'student') {
-      setUsername('vmendoza@universidad.edu');
-      setPassword('Campus2025*');
-    } else {
-      setUsername('carrieta@facultad.edu');
-      setPassword('Docente2025*');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      let response: Response;
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        response = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+      } catch {
+        throw new Error('No se pudo conectar con el servidor. Verifica que esté corriendo.');
+      }
+
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('El servidor devolvió una respuesta inválida.');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Credenciales inválidas');
+      }
+
+      // Store token and user
+      localStorage.setItem('educore_token', data.token);
+      localStorage.setItem('educore_user', JSON.stringify(data.user));
+
+      setIsSuccess(true);
+      setTimeout(() => {
+        onLoginSuccess(data.user);
+      }, 700);
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar sesión');
+      setIsLoading(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSSOLogin = (provider: 'google') => {
     setIsLoading(true);
-
+    setError('');
+    // Simulated Google login - in production this would redirect to OAuth
     setTimeout(() => {
       setIsLoading(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        onLoginSuccess(role);
-      }, 700);
-    }, 900);
-  };
-
-  const handleSSOLogin = (provider: 'eduroam' | 'google') => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        onLoginSuccess(role);
-      }, 600);
+      setError('Google OAuth no está configurado aún. Usa email y contraseña.');
     }, 800);
   };
 
@@ -73,7 +90,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button 
+          <button
             type="button"
             onClick={onToggleLang}
             className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-xs font-semibold shadow-xs active:scale-95 transition-transform hover:bg-surface-container-high cursor-pointer"
@@ -83,10 +100,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
             <span>{lang}</span>
             <span className="material-symbols-outlined text-[14px]">expand_more</span>
           </button>
-          <button 
+          <button
             type="button"
             onClick={() => setIsHelpOpen(true)}
-            aria-label="Centro de Ayuda Académica"
+            aria-label="Centro de Ayuda"
             className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant shadow-xs active:scale-95 transition-transform hover:bg-surface-container-high cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">help_outline</span>
@@ -94,20 +111,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
         </div>
       </div>
 
-      {/* Ambient Micro-banner for Academic Institution context */}
+      {/* Welcome Banner */}
       <div className="mt-1 mb-3 p-3 rounded-xl bg-surface-container-low flex items-center gap-3 shadow-xs border border-primary-fixed/40">
         <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary shrink-0">
-          <span className="material-symbols-outlined text-[18px]">verified_user</span>
+          <span className="material-symbols-outlined text-[18px]">school</span>
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs text-on-surface font-semibold truncate">
-            {lang === 'ES' ? 'Portal Oficial de Acceso Unificado' : 'Official Unified Access Portal'}
+            {lang === 'ES' ? 'Aprende sin límites' : 'Learn without limits'}
           </p>
           <p className="text-[11px] text-on-surface-variant truncate">
-            {lang === 'ES' ? 'Red Universitaria y Campus Virtual' : 'University Network & Virtual Campus'}
+            {lang === 'ES' ? 'Plataforma abierta de cursos en línea' : 'Open online course platform'}
           </p>
         </div>
-        <span className="w-2 h-2 rounded-full bg-tertiary-container animate-pulse" title="Servidores Activos"></span>
+        <span className="w-2 h-2 rounded-full bg-tertiary-container animate-pulse" title="Online"></span>
       </div>
 
       {/* Primary Authentication Surface Card */}
@@ -115,50 +132,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
         {/* Header Section */}
         <div className="mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
-            {lang === 'ES' ? 'Bienvenido de nuevo' : 'Welcome Back'}
+            {lang === 'ES' ? 'Bienvenido' : 'Welcome'}
           </h1>
           <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-            {lang === 'ES' ? 'Ingresa a tu campus virtual académico' : 'Sign in to your academic virtual campus'}
+            {lang === 'ES' ? 'Inicia sesión para continuar aprendiendo' : 'Sign in to continue learning'}
           </p>
         </div>
 
-        {/* Role Segmented Controller */}
-        <div className="relative w-full p-1 bg-surface-container-low rounded-lg flex items-center mb-4 border border-[#E2E8F0]">
-          <button
-            type="button"
-            onClick={() => handleRoleChange('student')}
-            className={`flex-1 py-2 text-center rounded-md text-xs transition-all duration-200 font-semibold flex items-center justify-center gap-1.5 cursor-pointer ${
-              role === 'student'
-                ? 'bg-surface-container-lowest text-primary-container shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">person</span>
-            <span>{lang === 'ES' ? 'Estudiante' : 'Student'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleChange('faculty')}
-            className={`flex-1 py-2 text-center rounded-md text-xs transition-all duration-200 font-semibold flex items-center justify-center gap-1.5 cursor-pointer ${
-              role === 'faculty'
-                ? 'bg-surface-container-lowest text-primary-container shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">co_present</span>
-            <span>{lang === 'ES' ? 'Docente / Investigador' : 'Faculty / Researcher'}</span>
-          </button>
-        </div>
+        {/* Error Message */}
+        {error && (
+          <div className="mb-3 p-2.5 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
+            <span className="material-symbols-outlined text-red-500 text-[18px] shrink-0">error</span>
+            <p className="text-xs text-red-700">{error}</p>
+          </div>
+        )}
 
         {/* Interactive Authentication Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-          {/* Institutional Email / User ID Input */}
+          {/* Email Input */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-on-surface font-semibold flex items-center justify-between" htmlFor="username">
+            <label className="text-xs text-on-surface font-semibold flex items-center justify-between" htmlFor="email">
               <span>
-                {role === 'student'
-                  ? (lang === 'ES' ? 'Correo institucional o ID universitario' : 'Institutional Email or Student ID')
-                  : (lang === 'ES' ? 'ID Docente o Correo de Cátedra' : 'Faculty ID or Academic Email')}
+                {lang === 'ES' ? 'Correo electrónico' : 'Email address'}
               </span>
               <span className="text-[11px] text-outline font-normal">
                 {lang === 'ES' ? 'Requerido' : 'Required'}
@@ -167,13 +162,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
             <div className="relative flex items-center rounded-lg bg-surface-container-low border border-[#E2E8F0] focus-within:bg-surface-container-lowest focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
               <span className="material-symbols-outlined text-outline pl-3 text-[18px] pointer-events-none">mail</span>
               <input
-                id="username"
-                type="text"
+                id="email"
+                type="email"
                 required
-                autoComplete="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={role === 'student' ? 'usuario@universidad.edu' : 'profesor@facultad.edu'}
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={lang === 'ES' ? 'tu@email.com' : 'you@email.com'}
                 className="w-full bg-transparent px-2.5 py-2.5 text-xs sm:text-sm text-on-surface placeholder:text-outline focus:outline-none"
               />
             </div>
@@ -247,8 +242,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
             type="submit"
             disabled={isLoading}
             className={`w-full mt-1 py-3 px-4 rounded-lg font-semibold text-xs sm:text-sm text-white shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${
-              isSuccess 
-                ? 'bg-tertiary-container' 
+              isSuccess
+                ? 'bg-tertiary-container'
                 : 'bg-primary-container hover:bg-secondary active:scale-[0.99]'
             }`}
           >
@@ -271,32 +266,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
           </button>
         </form>
 
+        {/* Register link inside card */}
+        <div className="mt-3 text-center">
+          <p className="text-xs text-on-surface-variant">
+            {lang === 'ES' ? '¿No tienes una cuenta?' : "Don't have an account?"}{' '}
+            <button
+              type="button"
+              onClick={() => setIsRegisterOpen(true)}
+              className="text-primary font-semibold hover:underline cursor-pointer"
+            >
+              {lang === 'ES' ? 'Crear cuenta' : 'Sign up'}
+            </button>
+          </p>
+        </div>
+
         {/* SSO Divider */}
         <div className="relative my-4 flex items-center justify-center">
           <div className="w-full h-px bg-[#E2E8F0]"></div>
           <span className="absolute bg-surface-container-lowest px-2.5 text-[11px] text-outline font-medium">
-            {lang === 'ES' ? 'O accede con tu identidad académica' : 'Or sign in with academic identity'}
+            {lang === 'ES' ? 'O continúa con' : 'Or continue with'}
           </span>
         </div>
 
         {/* SSO Buttons Group */}
         <div className="flex flex-col gap-2">
-          {/* Institutional SSO / Eduroam */}
-          <button
-            type="button"
-            onClick={() => handleSSOLogin('eduroam')}
-            className="w-full py-2.5 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container border border-[#E2E8F0] text-on-surface text-xs font-semibold shadow-xs transition-all flex items-center justify-between cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-md bg-secondary-container flex items-center justify-center text-white">
-                <span className="material-symbols-outlined text-[16px]">domain</span>
-              </div>
-              <span className="text-left truncate">Acceso Institucional SSO / Eduroam</span>
-            </div>
-            <span className="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
-          </button>
-
-          {/* Google Workspace for Education */}
+          {/* Google Login */}
           <button
             type="button"
             onClick={() => handleSSOLogin('google')}
@@ -311,62 +305,32 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
                 </svg>
               </div>
-              <span className="text-left truncate">Google Workspace for Education</span>
+              <span className="text-left truncate">Google</span>
             </div>
             <span className="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
           </button>
         </div>
       </div>
 
-      {/* Academic Campus Visual Snippet */}
+      {/* Course Platform Visual */}
       <div className="mt-3.5 w-full rounded-xl overflow-hidden shadow-sm relative bg-surface-container border border-[#E2E8F0]">
-        <div 
+        <div
           className="bg-cover bg-center w-full h-24 sm:h-28 transition-transform duration-500 hover:scale-105"
           style={{
-            backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuCWJQzUcmojaQExAlR6x1MYZJT5-2-6YRfFjibqJCZfnhpjNMwXErkZLtUS7_EfERHQhs7ftCpt9VXGeshffXvdWvatgP3FI-ST-yGtUFw3VSWu48xMX9WezWl-IRUrjvSQbSJ6i-Mh-xAm8Z46_1HIaUwkWBoIO44khL8n511rm2wnTu0XSqdd8ng9VtbCFBsukyFi_YW9RP98Ep7adoUgHW4Fv3nsu68s8tgkHjRHzYrCx6AtQOEo')`
+            backgroundImage: `url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80')`
           }}
         ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/40 to-transparent p-3 flex items-end justify-between">
           <div className="min-w-0 pr-2">
-            <p className="text-xs font-bold text-white tracking-tight">Período Académico 2025-I</p>
-            <p className="text-[11px] text-slate-200 truncate">Inscripciones y aulas virtuales activas</p>
+            <p className="text-xs font-bold text-white tracking-tight">
+              {lang === 'ES' ? 'Miles de cursos disponibles' : 'Thousands of courses available'}
+            </p>
+            <p className="text-[11px] text-slate-200 truncate">
+              {lang === 'ES' ? 'Aprende con expertos de la industria' : 'Learn from industry experts'}
+            </p>
           </div>
           <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-900 text-[10px] font-bold shrink-0 shadow-xs">
-            Activo
-          </span>
-        </div>
-      </div>
-
-      {/* Registration and Academic Onboarding Footnote */}
-      <div className="mt-3.5 text-center px-2">
-        <p className="text-xs text-on-surface-variant">
-          {lang === 'ES' ? '¿No tienes una cuenta aún?' : "Don't have an account yet?"}
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-1 text-xs">
-          <button
-            type="button"
-            onClick={() => setIsRegisterOpen(true)}
-            className="text-primary font-semibold hover:underline cursor-pointer"
-          >
-            {lang === 'ES' ? 'Solicita acceso institucional' : 'Request institutional access'}
-          </button>
-          <span className="text-outline">•</span>
-          <button
-            type="button"
-            onClick={() => setIsRegisterOpen(true)}
-            className="text-primary font-semibold hover:underline cursor-pointer"
-          >
-            {lang === 'ES' ? 'Regístrate' : 'Register'}
-          </button>
-        </div>
-
-        {/* Security & Institutional Compliance micro-tag */}
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-outline text-[11px]">
-          <span className="material-symbols-outlined text-[14px]">lock_clock</span>
-          <span>
-            {lang === 'ES'
-              ? 'Acceso cifrado TLS 1.3 bajo protocolo universitario'
-              : 'TLS 1.3 encrypted access under university protocol'}
+            {lang === 'ES' ? 'Gratis' : 'Free'}
           </span>
         </div>
       </div>
@@ -374,10 +338,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, lang, 
       {/* Modals */}
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <ForgotPasswordModal isOpen={isForgotOpen} onClose={() => setIsForgotOpen(false)} />
-      <RegisterModal 
-        isOpen={isRegisterOpen} 
-        onClose={() => setIsRegisterOpen(false)} 
-        onSuccessQuickLogin={(assignedRole) => onLoginSuccess(assignedRole)}
+      <RegisterModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        onSuccessQuickLogin={(user) => onLoginSuccess(user)}
       />
     </div>
   );

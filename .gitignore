@@ -6,3 +6,13 @@ coverage/
 *.log
 .env*
 !.env.example
+.env
+*.tsbuildinfo
+
+# Next.js
+.next/
+out/
+
+# Turbopack / Vercel
+.turbo/
+.vercel/

@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        Role         @default(STUDENT)
+  avatarUrl   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  courses     Course[]     @relation("InstructorCourses")
+  enrollments Enrollment[]
+  progress    Progress[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  courses     Course[]
+
+  @@map("categories")
+}
+
+model Course {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  bannerUrl    String?
+  isPublished  Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  instructorId String
+  categoryId   String?
+  category     Category?    @relation(fields: [categoryId], references: [id])
+  instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id])
+  enrollments  Enrollment[]
+  modules      Module[]
+
+  @@map("courses")
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  courseId    String
+  lessons     Lesson[]
+  quizzes     Quiz[]
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("modules")
+}
+
+model Lesson {
+  id        String     @id @default(uuid())
+  title     String
+  type      LessonType @default(TEXT)
+  content   String?
+  videoUrl  String?
+  duration  Int?
+  order     Int        @default(0)
+  createdAt DateTime   @default(now())
+  moduleId  String
+  module    Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress  Progress[]
+
+  @@map("lessons")
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  enrolledAt DateTime @default(now())
+  userId     String
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Progress {
+  id          String    @id @default(uuid())
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  userId      String
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("progress")
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum LessonType {
+  VIDEO
+  TEXT
+  PDF
+  LINK
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  OPEN_TEXT
+}
+
+model Quiz {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  order       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  moduleId    String
+  module      Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questions   QuizQuestion[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id        String       @id @default(uuid())
+  question  String
+  type      QuestionType @default(SINGLE_CHOICE)
+  points    Int          @default(1)
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+  quizId    String
+  quiz      Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options   QuizOption[]
+
+  @@map("quiz_questions")
+}
+
+model QuizOption {
+  id         String      @id @default(uuid())
+  text       String
+  isCorrect  Boolean     @default(false)
+  order      Int         @default(0)
+  createdAt  DateTime    @default(now())
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_options")
+}
