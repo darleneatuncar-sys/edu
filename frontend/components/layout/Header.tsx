@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/ui/Avatar';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface HeaderProps {
   homeHref?: string;
@@ -51,6 +52,8 @@ export function Header({ homeHref = '/mis-cursos', user, profileHref = '/perfil'
               className="w-56 lg:w-72 pl-9 pr-3 py-2 text-xs bg-surface-container-low border border-outline-variant/30 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-outline"
             />
           </div>
+
+          <ThemeToggle />
 
           <button
             className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-container-low transition-colors relative"

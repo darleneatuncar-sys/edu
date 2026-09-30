@@ -5,9 +5,10 @@ import { Course } from '@/lib/types';
 
 interface CourseCardProps {
   course: Course;
+  priority?: boolean;
 }
 
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseCard({ course, priority = false }: CourseCardProps) {
   return (
     <Link
       href={`/curso/${course.id}`}
@@ -18,6 +19,8 @@ export function CourseCard({ course }: CourseCardProps) {
           src={course.bannerUrl}
           alt={course.title}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
+          priority={priority}
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent" />
@@ -27,13 +30,13 @@ export function CourseCard({ course }: CourseCardProps) {
         </div>
       </div>
 
-      <div className="p-4 flex flex-col gap-3">
+      <div className="p-4 flex flex-col gap-3 flex-1">
         <ProgressBar value={course.progressPercent} showLabel label="Progreso" />
 
-        <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
-          <span>{course.completedLessons} de {course.totalLessons} clases</span>
+        <div className="flex items-center justify-between gap-2 text-[11px] text-on-surface-variant">
+          <span className="shrink-0">{course.completedLessons} de {course.totalLessons} clases</span>
           {course.lastLesson && (
-            <span className="truncate ml-2">Última: {course.lastLesson}</span>
+            <span className="truncate min-w-0">Última: {course.lastLesson}</span>
           )}
         </div>
 
@@ -50,7 +53,7 @@ export function CourseCard({ course }: CourseCardProps) {
           </span>
         </div>
 
-        <button className="w-full py-2.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-secondary transition-colors flex items-center justify-center gap-1.5">
+        <button className="w-full py-2.5 mt-auto rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-secondary transition-colors flex items-center justify-center gap-1.5">
           <span>{course.status === 'completed' ? 'Ver curso' : 'Continuar'}</span>
           <span className="material-symbols-outlined text-[14px]">
             {course.status === 'completed' ? 'visibility' : 'arrow_forward'}

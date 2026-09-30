@@ -28,7 +28,7 @@ export default function DocenteLayout({
         accountSectionLabel="Cuenta"
         accountItems={instructorAccountItems}
       />
-      <main className="lg:ml-56 pt-14">
+      <main className="lg:ml-[72px] pt-14">
         {children}
       </main>
     </div>
