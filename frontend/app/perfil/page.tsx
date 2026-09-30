@@ -19,7 +19,7 @@ export default function PerfilPage() {
     <div className="min-h-screen bg-surface">
       <Header homeHref="/mis-cursos" user={currentUser} />
       <Sidebar navItems={studentNavItems} accountItems={studentAccountItems} />
-      <main className="lg:ml-56 pt-14">
+      <main className="lg:ml-[72px] pt-14">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl font-bold text-on-surface mb-6">Mi perfil</h1>
 

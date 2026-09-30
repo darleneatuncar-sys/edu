@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
@@ -36,6 +38,43 @@
   --color-error-container: #ffdad6;
 }
 
+/* ===== Dark theme: sobrescribe los tokens cuando <html data-theme="dark"> ===== */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-surface: #0b1424;
+  --color-surface-dim: #0b1424;
+  --color-surface-bright: #26344d;
+  --color-surface-container-lowest: #070f1c;
+  --color-surface-container-low: #101b2e;
+  --color-surface-container: #142238;
+  --color-surface-container-high: #1a2a44;
+  --color-surface-container-highest: #20314d;
+
+  --color-on-surface: #e8eefc;
+  --color-on-surface-variant: #a9b4c9;
+  --color-inverse-surface: #e8eefc;
+  --color-inverse-on-surface: #142238;
+
+  --color-outline: #8b95a9;
+  --color-outline-variant: #3a4761;
+
+  --color-primary: #8ab4ff;
+  --color-on-primary: #002a66;
+  --color-primary-container: #3b82f6;
+  --color-on-primary-container: #eaf1ff;
+
+  --color-secondary: #93b4ff;
+  --color-on-secondary: #0b2a66;
+
+  --color-success: #4ade80;
+  --color-success-bg: #0a2b1a;
+  --color-success-border: #14532d;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #4a1512;
+}
+
 @layer base {
   body {
     background-color: var(--color-surface);
@@ -43,6 +82,11 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
   }
 }
 
@@ -53,4 +97,20 @@
 
 .material-symbols-outlined.fill {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Solo las cards se desplazan a un lado cuando el nav se abre (el fondo no se mueve) */
+.sidebar-shift {
+  transition: transform 0.2s ease-out;
+}
+
+@media (min-width: 1024px) {
+  html[data-sidebar-expanded='true'] .sidebar-shift {
+    transform: translateX(152px); /* 224px (nav expandido) - 72px (rail colapsado) */
+  }
+}
+
+/* Evita scrollbar horizontal si una card queda fuera del área visible durante el desplazamiento */
+main {
+  overflow-x: clip;
 }

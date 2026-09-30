@@ -20,8 +20,8 @@ export default function ExplorarPage() {
     <div className="min-h-screen bg-surface">
       <Header homeHref="/mis-cursos" user={currentUser} />
       <Sidebar navItems={studentNavItems} accountItems={studentAccountItems} />
-      <main className="lg:ml-56 pt-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="lg:ml-[72px] pt-14">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-on-surface">
               Explorar cursos
@@ -31,8 +31,8 @@ export default function ExplorarPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {exploreCourses.map((course) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sidebar-shift">
+            {exploreCourses.map((course, index) => (
               <div
                 key={course.id}
                 className="flex flex-col bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden hover:shadow-md transition-all"
@@ -42,6 +42,8 @@ export default function ExplorarPage() {
                     src={course.bannerUrl}
                     alt={course.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
+                    priority={index < 3}
                     className="object-cover"
                   />
                   <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-primary">

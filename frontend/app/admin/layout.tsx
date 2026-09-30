@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -21,6 +22,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <span className="text-xs text-on-surface-variant hidden sm:block">admin@educore.com</span>
           <div className="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center">
             <span className="material-symbols-outlined text-primary-container text-[18px]">person</span>
@@ -30,7 +32,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       <AdminSidebar />
 
-      <main className="pt-14 lg:ml-56 min-h-screen">
+      <main className="pt-14 lg:ml-[72px] min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8">
           {children}
         </div>

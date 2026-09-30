@@ -53,7 +53,7 @@ export default function DocenteMisCursosPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-center py-16">
           <span className="material-symbols-outlined animate-spin text-[32px] text-primary-container">progress_activity</span>
           <span className="ml-3 text-sm text-on-surface-variant">Cargando cursos...</span>
@@ -63,7 +63,7 @@ export default function DocenteMisCursosPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-on-surface">Mis cursos</h1>
@@ -117,7 +117,7 @@ export default function DocenteMisCursosPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 sidebar-shift">
           {filtered.map((course) => (
             <InstructorCourseItem key={course.id} course={course} />
           ))}

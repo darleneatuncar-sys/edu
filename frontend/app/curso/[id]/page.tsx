@@ -28,7 +28,7 @@ export default function CursoDetailPage() {
       <div className="min-h-screen bg-surface">
         <Header homeHref="/mis-cursos" user={currentUser} />
         <Sidebar navItems={studentNavItems} accountItems={studentAccountItems} />
-        <main className="lg:ml-56 pt-14">
+        <main className="lg:ml-[72px] pt-14">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="material-symbols-outlined text-[48px] text-outline mb-3">error_outline</span>
@@ -48,7 +48,7 @@ export default function CursoDetailPage() {
     <div className="min-h-screen bg-surface">
       <Header homeHref="/mis-cursos" user={currentUser} />
       <Sidebar navItems={studentNavItems} accountItems={studentAccountItems} />
-      <main className="lg:ml-56 pt-14">
+      <main className="lg:ml-[72px] pt-14">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link
             href="/mis-cursos"
@@ -63,6 +63,8 @@ export default function CursoDetailPage() {
               src={course.bannerUrl}
               alt={course.title}
               fill
+              sizes="(max-width: 1280px) 100vw, 1024px"
+              priority
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
